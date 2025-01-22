@@ -28,9 +28,6 @@ const canvas = document.querySelector("#game-canvas");
 const contexto = canvas.getContext("2d");
 var TelaAtiva = TelaInicio;
 
-contexto.fillStyle = '#79c5ce'
-contexto.fillRect(0,0, canvas.width, canvas.height)
-
 const FlappyBird = {
     spriteX: 0,
     spriteY: 0,
@@ -47,8 +44,11 @@ const FlappyBird = {
                 FlappyBird.largura, FlappyBird.altura,
             );
         },
+        Gravidade: 0.25,
+        Velocidade: 0,
         Atualizar(){
-            FlappyBird.y = FlappyBird.y + 1
+            FlappyBird.Velocidade += FlappyBird.Gravidade;
+            FlappyBird.y = FlappyBird.y + FlappyBird.Velocidade;
         }
 
 };
@@ -133,6 +133,8 @@ function MudarTelaAtiva(){
 window.addEventListener("click", MudarTelaAtiva);
 
 function loop(){
+    contexto.fillStyle = '#79c5ce'
+    contexto.fillRect(0,0, canvas.width, canvas.height)
     TelaAtiva.desenha();
     requestAnimationFrame(loop);
 };
