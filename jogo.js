@@ -5,6 +5,8 @@ sprites.src = "./sprites.png";
 const som_batida = new Audio();
 som_batida.src = './sons/punch.wav'
 
+let Quadro_Animacao = 0;
+
 const TelaInicio = {
     Desenha() {
         Cidade.Desenha();
@@ -20,7 +22,9 @@ const TelaInicio = {
 const TelaJogo = {
     Desenha() {
         Cidade.Desenha();
+        Cidade.Atualizar();
         Chao.Desenha();
+        Chao.Atualizar();
         FlappyBird.Desenha();
         FlappyBird.Atualizar();
     },
@@ -33,7 +37,7 @@ const canvas = document.querySelector("#game-canvas");
 const contexto = canvas.getContext("2d");
 var TelaAtiva = TelaInicio;
 
-function FazColisao(){
+function FazColisao() {
     if (FlappyBird.Y + FlappyBird.Altura >= Chao.Y) {
         return true;
     } else {
@@ -49,9 +53,18 @@ const FlappyBird = {
     X: 10,
     Y: 50,
     Pulo: 4.6,
+
     Pula() {
         FlappyBird.Velocidade = -FlappyBird.Pulo;
     },
+
+    Movimentos: [
+        { SpriteX: 0, SpriteY: 0, }, // Asa para Cima
+        { SpriteX: 0, SpriteY: 26, }, // Asa no Meio
+        { SpriteX: 0, SpriteY: 52, }, // Asa para Baixo
+        { SpriteX: 0, SpriteY: 26, }, // Asa no Meio
+    ],
+
     Desenha() {
         contexto.drawImage(
             sprites,
@@ -61,8 +74,20 @@ const FlappyBird = {
             FlappyBird.Largura, FlappyBird.Altura,
         );
     },
+
     Gravidade: 0.25,
     Velocidade: 0,
+    FrameAtual: 0,
+
+    AtualizarFrame() {
+        if ((Quadro_Animacao % 10) === 0) {
+            FlappyBird.FrameAtual = FlappyBird.FrameAtual + 1;
+            FlappyBird.FrameAtual = FlappyBird.FrameAtual % FlappyBird.Movimentos.length;
+            FlappyBird.SpriteX = FlappyBird.Movimentos[FlappyBird.FrameAtual].SpriteX;
+            FlappyBird.SpriteY = FlappyBird.Movimentos[FlappyBird.FrameAtual].SpriteY;
+        }
+    },
+
     Atualizar() {
         if (FazColisao()) {
             som_batida.play();
@@ -71,8 +96,8 @@ const FlappyBird = {
         }
         FlappyBird.Velocidade += FlappyBird.Gravidade;
         FlappyBird.Y = FlappyBird.Y + FlappyBird.Velocidade;
+        FlappyBird.AtualizarFrame();
     }
-
 };
 
 const Chao = {
@@ -98,7 +123,11 @@ const Chao = {
             Chao.X + Chao.Largura, Chao.Y,
             Chao.Largura, Chao.Altura,
         );
+    },
 
+    Atualizar() {
+        Chao.X = Chao.X - 1;
+        Chao.X = Chao.X % (Chao.Largura / 2);
     }
 };
 
@@ -125,8 +154,13 @@ const Cidade = {
             Cidade.X + Cidade.Largura, Cidade.Y,
             Cidade.Largura, Cidade.Altura,
         );
+    },
 
+    Atualizar() {
+        Cidade.X = Cidade.X - 0.5;
+        Cidade.X = Cidade.X % (Cidade.Largura / 2);
     }
+
 };
 
 const Inicio = {
@@ -159,6 +193,7 @@ function loop() {
     contexto.fillRect(0, 0, canvas.width, canvas.height)
     TelaAtiva.Desenha();
     requestAnimationFrame(loop);
+    Quadro_Animacao = Quadro_Animacao + 1;
 };
 
 loop();
