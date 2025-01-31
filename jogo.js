@@ -139,6 +139,8 @@ const Cidade = {
     X: 0,
     Y: 280,
     Desenha() {
+        contexto.fillRect(0, 0, canvas.width, canvas.height);
+
         contexto.drawImage(
             sprites,
             Cidade.SpriteX, Cidade.SpriteY,
@@ -154,11 +156,20 @@ const Cidade = {
             Cidade.X + Cidade.Largura, Cidade.Y,
             Cidade.Largura, Cidade.Altura,
         );
+        
+        contexto.drawImage(
+            sprites,
+            Cidade.SpriteX, Cidade.SpriteY,
+            Cidade.Largura, Cidade.Altura,
+            Cidade.X + (Cidade.Largura*2), Cidade.Y,
+            Cidade.Largura, Cidade.Altura,
+        );
+
     },
 
     Atualizar() {
         Cidade.X = Cidade.X - 0.5;
-        Cidade.X = Cidade.X % (Cidade.Largura / 2);
+        Cidade.X = Cidade.X % Cidade.Largura;
     }
 
 };
