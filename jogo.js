@@ -23,6 +23,7 @@ const TelaJogo = {
     Desenha() {
         Cidade.Desenha();
         Cidade.Atualizar();
+        Canos.Desenha();
         Chao.Desenha();
         Chao.Atualizar();
         FlappyBird.Desenha();
@@ -156,12 +157,12 @@ const Cidade = {
             Cidade.X + Cidade.Largura, Cidade.Y,
             Cidade.Largura, Cidade.Altura,
         );
-        
+
         contexto.drawImage(
             sprites,
             Cidade.SpriteX, Cidade.SpriteY,
             Cidade.Largura, Cidade.Altura,
-            Cidade.X + (Cidade.Largura*2), Cidade.Y,
+            Cidade.X + (Cidade.Largura * 2), Cidade.Y,
             Cidade.Largura, Cidade.Altura,
         );
 
@@ -192,6 +193,66 @@ const Inicio = {
     }
 };
 
+const Canos = {
+
+    Largura: 52,
+    Altura: 400,
+    Ceu: {
+        SpriteX: 52,
+        SpriteY: 169,
+        X: 120,
+        Y: -150
+    },
+    Chao: {
+        SpriteX: 0,
+        SpriteY: 169
+    },
+    Pares: [],
+
+    Desenha() {
+        const EspacamentoEntreCanos = 80;
+
+        for(ck=0;ck<Canos.Pares.length;ck++){
+            Canos.Ceu.X = Canos.Pares[ck].x;
+            Canos.Ceu.Y = Canos.Pares[ck].Y;
+        }
+
+        // [Cano do Céu]
+
+        contexto.drawImage(
+            sprites,
+            Canos.Ceu.SpriteX, Canos.Ceu.SpriteY,
+            Canos.Largura, Canos.Altura,
+            Canos.Ceu.X, Canos.Ceu.Y,
+            Canos.Largura, Canos.Altura,
+        )
+
+        // [Cano do Chão]
+
+        const CanoChaoX = Canos.Ceu.X;
+        const CanoChaoY = Canos.Altura + EspacamentoEntreCanos + Canos.Ceu.Y;
+
+        contexto.drawImage(
+            sprites,
+            Canos.Chao.SpriteX, Canos.Chao.SpriteY,
+            Canos.Largura, Canos.Altura,
+            CanoChaoX, CanoChaoY,
+            Canos.Largura, Canos.Altura,
+        )
+    },
+
+    Atualizar() {
+        Canos.Ceu.X = Canos.Ceu.X - 2;
+        const Passou100Frames = (Quadro_Animacao % 100 === 0);
+        if(Passou100Frames) {
+            const NovoPar = {
+                X: canvas.width,
+                Y: -150,
+            }
+            Canos.Pares.push(NovoPar);
+        }
+    }
+}
 
 function MudarTelaAtiva() {
     TelaAtiva.Click();
