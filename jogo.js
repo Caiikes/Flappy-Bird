@@ -24,6 +24,7 @@ const TelaJogo = {
         Cidade.Desenha();
         Cidade.Atualizar();
         Canos.Desenha();
+        Canos.Atualizar();
         Chao.Desenha();
         Chao.Atualizar();
         FlappyBird.Desenha();
@@ -212,44 +213,63 @@ const Canos = {
     Desenha() {
         const EspacamentoEntreCanos = 80;
 
-        for(ck=0;ck<Canos.Pares.length;ck++){
-            Canos.Ceu.X = Canos.Pares[ck].x;
+        for (ck = 0; ck < Canos.Pares.length; ck++) {
+            Canos.Ceu.X = Canos.Pares[ck].X;
             Canos.Ceu.Y = Canos.Pares[ck].Y;
+
+
+            // [Cano do Céu]
+            contexto.drawImage(
+                sprites,
+                Canos.Ceu.SpriteX, Canos.Ceu.SpriteY,
+                Canos.Largura, Canos.Altura,
+                Canos.Ceu.X, Canos.Ceu.Y,
+                Canos.Largura, Canos.Altura,
+            )
+
+            // [Cano do Chão]
+
+            const CanoChaoX = Canos.Ceu.X;
+            const CanoChaoY = Canos.Altura + EspacamentoEntreCanos + Canos.Ceu.Y;
+
+            contexto.drawImage(
+                sprites,
+                Canos.Chao.SpriteX, Canos.Chao.SpriteY,
+                Canos.Largura, Canos.Altura,
+                CanoChaoX, CanoChaoY,
+                Canos.Largura, Canos.Altura,
+            )
         }
-
-        // [Cano do Céu]
-
-        contexto.drawImage(
-            sprites,
-            Canos.Ceu.SpriteX, Canos.Ceu.SpriteY,
-            Canos.Largura, Canos.Altura,
-            Canos.Ceu.X, Canos.Ceu.Y,
-            Canos.Largura, Canos.Altura,
-        )
-
-        // [Cano do Chão]
-
-        const CanoChaoX = Canos.Ceu.X;
-        const CanoChaoY = Canos.Altura + EspacamentoEntreCanos + Canos.Ceu.Y;
-
-        contexto.drawImage(
-            sprites,
-            Canos.Chao.SpriteX, Canos.Chao.SpriteY,
-            Canos.Largura, Canos.Altura,
-            CanoChaoX, CanoChaoY,
-            Canos.Largura, Canos.Altura,
-        )
     },
 
     Atualizar() {
-        Canos.Ceu.X = Canos.Ceu.X - 2;
+
         const Passou100Frames = (Quadro_Animacao % 100 === 0);
-        if(Passou100Frames) {
+
+        if (Passou100Frames) {
             const NovoPar = {
                 X: canvas.width,
-                Y: -150,
+                Y: -150 * (Math.random() + 1),
             }
             Canos.Pares.push(NovoPar);
+        }
+
+        for (ck = 0; ck < Canos.Pares.length; ck++) {
+            const Par = Canos.Pares[ck];
+            Par.X = Par.X - 2;
+
+            if (Canos.Pares.length > 0) {
+                const PrimeiroPar = Canos.Pares[0];
+                if (PrimeiroPar.X < -Canos.Largura) {
+                    Canos.Pares.shift();
+                }
+            }
+
+            if (FazColisao(Par)) {
+                som_batida.play();
+                TelaAtiva = TelaInicio;
+                return;
+            }
         }
     }
 }
