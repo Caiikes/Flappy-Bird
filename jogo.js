@@ -47,6 +47,25 @@ function FazColisao() {
     }
 }
 
+function FazColisaoObstaculo(Par) {
+    if (FlappyBird.X >= Par.X) {
+
+        const AlturaCabecaFlappy = FlappyBird.Y;
+        const AlturaPeFlappy = FlappyBird.Y + FlappyBird.Altura;
+        const BocaCanoCeuY = Par.Y + Canos.Altura;
+        const BocaCanoChaoY = Par.Y + Canos.Altura + Canos.EspacamentoEntreCanos;
+        
+        if (AlturaCabecaFlappy <= BocaCanoCeuY) {
+            return true;
+        }
+
+        if (AlturaPeFlappy >= BocaCanoChaoY) {
+            return true;
+        }
+    }
+    return false;
+}
+
 const FlappyBird = {
     SpriteX: 0,
     SpriteY: 0,
@@ -210,9 +229,9 @@ const Canos = {
     },
     Pares: [],
 
-    Desenha() {
-        const EspacamentoEntreCanos = 80;
+    EspacamentoEntreCanos: 80,
 
+    Desenha() {
         for (ck = 0; ck < Canos.Pares.length; ck++) {
             Canos.Ceu.X = Canos.Pares[ck].X;
             Canos.Ceu.Y = Canos.Pares[ck].Y;
@@ -230,7 +249,7 @@ const Canos = {
             // [Cano do Chão]
 
             const CanoChaoX = Canos.Ceu.X;
-            const CanoChaoY = Canos.Altura + EspacamentoEntreCanos + Canos.Ceu.Y;
+            const CanoChaoY = Canos.Altura + Canos.EspacamentoEntreCanos + Canos.Ceu.Y;
 
             contexto.drawImage(
                 sprites,
@@ -252,7 +271,7 @@ const Canos = {
                 Y: -150 * (Math.random() + 1),
             }
             Canos.Pares.push(NovoPar);
-        }
+        };
 
         for (ck = 0; ck < Canos.Pares.length; ck++) {
             const Par = Canos.Pares[ck];
@@ -265,7 +284,7 @@ const Canos = {
                 }
             }
 
-            if (FazColisao(Par)) {
+            if (FazColisaoObstaculo(Par)) {
                 som_batida.play();
                 TelaAtiva = TelaInicio;
                 return;
