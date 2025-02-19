@@ -11,9 +11,9 @@ let Quadro_Animacao = 0;
 
 const TelaInicio = {
     Desenha() {
-        Cidade.Desenha();
-        Chao.Desenha();
-        FlappyBird.Desenha();
+        Jogo.Cidade.Desenha();
+        Jogo.Chao.Desenha();
+        Jogo.FlappyBird.Desenha();
         Inicio.Desenha();
     },
     Click() {
@@ -23,19 +23,19 @@ const TelaInicio = {
 
 const TelaJogo = {
     Desenha() {
-        Cidade.Desenha();
-        Cidade.Atualizar();
-        FlappyBird.Desenha();
-        FlappyBird.Atualizar();
-        Canos.Desenha();
-        Canos.Atualizar();
-        Chao.Desenha();
-        Chao.Atualizar();
-        Placar.Desenha();
-        Placar.Atualizar();
+        Jogo.Cidade.Desenha();
+        Jogo.Cidade.Atualizar();
+        Jogo.FlappyBird.Desenha();
+        Jogo.FlappyBird.Atualizar();
+        Jogo.Canos.Desenha();
+        Jogo.Canos.Atualizar();
+        Jogo.Chao.Desenha();
+        Jogo.Chao.Atualizar();
+        Jogo.Placar.Desenha();
+        Jogo.Placar.Atualizar();
     },
     Click() {
-        FlappyBird.Pula();
+        Jogo.FlappyBird.Pula();
     }
 }
 
@@ -44,15 +44,19 @@ const TelaGameOver = {
         GameOver.Desenha();
     },
     Click() {
+        Jogo.Placar.Resetar();
+        Inicializa();
+        TelaAtiva = TelaJogo;
     }
-}
+};
+
 
 const canvas = document.querySelector("#game-canvas");
 const contexto = canvas.getContext("2d");
 var TelaAtiva = TelaInicio;
 
 function FazColisao() {
-    if (FlappyBird.Y + FlappyBird.Altura >= Chao.Y) {
+    if (Jogo.FlappyBird.Y + Jogo.FlappyBird.Altura >= Jogo.Chao.Y) {
         return true;
     } else {
         return false;
@@ -60,19 +64,19 @@ function FazColisao() {
 }
 
 function FazColisaoObstaculo(Par) {
-    if (FlappyBird.X >= Par.X) {
+    if (Jogo.FlappyBird.X >= Par.X) {
 
-        const AlturaCabecaFlappy = FlappyBird.Y;
-        const AlturaPeFlappy = FlappyBird.Y + FlappyBird.Altura;
-        const BocaCanoCeuY = Par.Y + Canos.Altura;
-        const BocaCanoChaoY = Par.Y + Canos.Altura + Canos.EspacamentoEntreCanos;
+        const AlturaCabecaFlappy = Jogo.FlappyBird.Y;
+        const AlturaPeFlappy = Jogo.FlappyBird.Y + Jogo.FlappyBird.Altura;
+        const BocaCanoCeuY = Par.Y + Jogo.Canos.Altura;
+        const BocaCanoChaoY = Par.Y + Jogo.Canos.Altura + Jogo.Canos.EspacamentoEntreCanos;
 
         if (AlturaCabecaFlappy <= BocaCanoCeuY) {
-            return true;
+            return false;
         }
 
         if (AlturaPeFlappy >= BocaCanoChaoY) {
-            return true;
+            return false;
         }
     }
     return false;
@@ -85,7 +89,6 @@ function Inicializa() {
     Jogo.Canos = CriaCanos();
     Jogo.Placar = CriaPlacar();
 }
-
 
 function CriaFlappyBird() {
 
@@ -331,22 +334,27 @@ function CriaCanos() {
 }
 
 function CriaPlacar() {
-
     const Placar = {
         Pontos: 0,
+        Melhor: 0,
         Desenha() {
-            contexto.font = '35px "VT323"';
-            contexto.textAlign = 'right';
-            contexto.fillStyle = 'white';
-            contexto.fillText("Pontuação: " + Placar.Pontos, 180, 35)
+            contexto.font = '30px "VT323"';
+            contexto.textAlign = 'left';
+            contexto.fillStyle = 'white'; 
+            contexto.fillText("Pontuação: " + Placar.Pontos, 10, 30);
         },
         Atualizar() {
-            const IntervalodeFrames = 20;
-            const PassouOIntervalo = Quadro_Animacao % IntervalodeFrames === 0;
-
+            const IntervaloDeFrames = 20;
+            const PassouOIntervalo = Quadro_Animacao % IntervaloDeFrames === 0;
             if (PassouOIntervalo) {
                 Placar.Pontos = Placar.Pontos + 1;
             }
+        },
+        Resetar() {
+            if (Placar.Pontos > Placar.Melhor) {
+                Placar.Melhor = Placar.Pontos;
+            }
+            Placar.Pontos = 0;
         }
     }
     return Placar;
@@ -357,8 +365,8 @@ const GameOver = {
     SpriteY: 153,
     Largura: 226,
     Altura: 200,
-    X: 50,
-    Y: 70,
+    X: (320 - 226) / 2, 
+    Y: 90,
 
     Desenha() {
         contexto.drawImage(
@@ -367,10 +375,34 @@ const GameOver = {
             GameOver.Largura, GameOver.Altura,
             GameOver.X, GameOver.Y,
             GameOver.Largura, GameOver.Altura
-        )
-    }
-}
+        );
 
+        contexto.font = '20px "VT323"';
+        contexto.textAlign = 'right';
+        contexto.fillStyle = 'black';
+        contexto.fillText(Jogo.Placar.Pontos, GameOver.X + 190, GameOver.Y + 45);
+        contexto.fillText(Jogo.Placar.Melhor, GameOver.X + 190, GameOver.Y + 90);
+
+        let MedalhaX = 0;
+        if (Jogo.Placar.Pontos > 20) {
+            MedalhaX = 48; // medalha de bronze
+        }
+        if (Jogo.Placar.Pontos >= 50) {
+            MedalhaX = 96; // medalha de prata
+        }
+        if (Jogo.Placar.Pontos >= 100) {
+            MedalhaX = 144; // medalha de ouro
+        }
+
+        contexto.drawImage(
+            sprites,
+            MedalhaX, 78, 
+            44, 44, 
+            GameOver.X + 25, GameOver.Y + 75, 
+            44, 44
+        );
+    }
+};
 
 function MudarTelaAtiva() {
     TelaAtiva.Click();
@@ -385,5 +417,7 @@ function loop() {
     requestAnimationFrame(loop);
     Quadro_Animacao = Quadro_Animacao + 1;
 };
+
+Inicializa();
 
 loop();
