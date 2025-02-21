@@ -42,8 +42,35 @@ const TelaJogo = {
 const TelaGameOver = {
     Desenha() {
         GameOver.Desenha();
+
+        contexto.font = '20px "VT323"';
+        contexto.textAlign = 'center';
+        contexto.fillStyle = 'white';
+
+        let BotaoX = canvas.width / 2;
+        let BotaoY = canvas.height - 30;
+
+        contexto.fillText("Apagar a melhor pontuação", BotaoX, BotaoY);
     },
-    Click() {
+    Click(evento) {
+        let MouseX = evento.clientX - canvas.getBoundingClientRect().left;
+        let MouseY = evento.clientY - canvas.getBoundingClientRect().top;
+
+        let BotaoX = canvas.width / 2;
+        let BotaoY = canvas.height - 30;
+
+        let LarguraTexto = contexto.measureText("Apagar a melhor pontuação").width;
+        let AlturaTexto = 20;
+
+        if (MouseX >= BotaoX - LarguraTexto / 2 && MouseX <= BotaoX + LarguraTexto / 2 &&
+            MouseY >= BotaoY - AlturaTexto && MouseY <= BotaoY) {
+
+            if (window.confirm("Tem certeza que deseja apagar a melhor pontuação?")) {
+                localStorage.removeItem("MelhorPontuacao");
+                Jogo.Placar.Melhor = 0;
+            }
+        }
+
         if (Jogo.Placar.Pontos > Jogo.Placar.Melhor) {
             Jogo.Placar.Melhor = Jogo.Placar.Pontos;
         }
@@ -51,7 +78,6 @@ const TelaGameOver = {
         Inicializa();
         TelaAtiva = TelaJogo;
     }
-
 };
 
 const canvas = document.querySelector("#game-canvas");
@@ -437,29 +463,8 @@ const GameOver = {
     }
 };
 
-function VerificaCliqueApagar(evento) {
-    let MouseX = evento.clientX - canvas.getBoundingClientRect().left;
-    let MouseY = evento.clientY - canvas.getBoundingClientRect().top;
-
-    let BotaoX = canvas.width / 2;
-    let BotaoY = canvas.height - 30;
-
-    let LarguraTexto = contexto.measureText("Apagar a melhor pontuação").width;
-    let AlturaTexto = 20;
-
-    if (MouseX >= BotaoX - LarguraTexto / 2 && MouseX <= BotaoX + LarguraTexto / 2 &&
-        MouseY >= BotaoY - AlturaTexto / 2 && MouseY <= BotaoY + AlturaTexto / 2) {
-
-        if (window.confirm("Tem certeza que deseja apagar a melhor pontuação?")) {
-            localStorage.removeItem("MelhorPontuacao");
-        }
-    }
-}
-
-canvas.addEventListener("click", VerificaCliqueApagar);
-
-function MudarTelaAtiva() {
-    TelaAtiva.Click();
+function MudarTelaAtiva(evento) {
+    TelaAtiva.Click(evento);
 }
 
 window.addEventListener("click", MudarTelaAtiva);
