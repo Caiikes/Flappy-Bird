@@ -44,12 +44,15 @@ const TelaGameOver = {
         GameOver.Desenha();
     },
     Click() {
+        if (Jogo.Placar.Pontos > Jogo.Placar.Melhor) {
+            Jogo.Placar.Melhor = Jogo.Placar.Pontos;
+        }
         Jogo.Placar.Resetar();
         Inicializa();
         TelaAtiva = TelaJogo;
     }
-};
 
+};
 
 const canvas = document.querySelector("#game-canvas");
 const contexto = canvas.getContext("2d");
@@ -72,11 +75,11 @@ function FazColisaoObstaculo(Par) {
         const BocaCanoChaoY = Par.Y + Jogo.Canos.Altura + Jogo.Canos.EspacamentoEntreCanos;
 
         if (AlturaCabecaFlappy <= BocaCanoCeuY) {
-            return false;
+            return true;
         }
 
         if (AlturaPeFlappy >= BocaCanoChaoY) {
-            return false;
+            return true;
         }
     }
     return false;
@@ -335,24 +338,34 @@ function CriaCanos() {
 
 function CriaPlacar() {
     const Placar = {
+
         Pontos: 0,
-        Melhor: 0,
+        Melhor: localStorage.getItem("MelhorPontuacao") || 0,
+
         Desenha() {
             contexto.font = '30px "VT323"';
             contexto.textAlign = 'left';
-            contexto.fillStyle = 'white'; 
+            contexto.fillStyle = 'white';
             contexto.fillText("Pontuação: " + Placar.Pontos, 10, 30);
         },
+
         Atualizar() {
             const IntervaloDeFrames = 20;
             const PassouOIntervalo = Quadro_Animacao % IntervaloDeFrames === 0;
             if (PassouOIntervalo) {
                 Placar.Pontos = Placar.Pontos + 1;
             }
+
+            if (Placar.Pontos > Placar.Melhor) {
+                Placar.Melhor = Placar.Pontos;
+                localStorage.setItem("MelhorPontuacao", Placar.Melhor);
+            }
         },
+
         Resetar() {
             if (Placar.Pontos > Placar.Melhor) {
                 Placar.Melhor = Placar.Pontos;
+                localStorage.setItem("MelhorPontuacao", Placar.Melhor);
             }
             Placar.Pontos = 0;
         }
@@ -365,8 +378,8 @@ const GameOver = {
     SpriteY: 153,
     Largura: 226,
     Altura: 200,
-    X: (320 - 226) / 2, 
-    Y: 90,
+    X: (320 - 226) / 2,
+    Y: 50,
 
     Desenha() {
         contexto.drawImage(
@@ -378,31 +391,72 @@ const GameOver = {
         );
 
         contexto.font = '20px "VT323"';
-        contexto.textAlign = 'right';
+        contexto.textAlign = 'center';
         contexto.fillStyle = 'black';
-        contexto.fillText(Jogo.Placar.Pontos, GameOver.X + 190, GameOver.Y + 45);
-        contexto.fillText(Jogo.Placar.Melhor, GameOver.X + 190, GameOver.Y + 90);
+        contexto.fillText(Jogo.Placar.Pontos, GameOver.X + 185, GameOver.Y + 90);
+        contexto.fillText(Jogo.Placar.Melhor, GameOver.X + 188, GameOver.Y + 130);
 
-        let MedalhaX = 0;
-        if (Jogo.Placar.Pontos > 20) {
-            MedalhaX = 48; // medalha de bronze
-        }
-        if (Jogo.Placar.Pontos >= 50) {
-            MedalhaX = 96; // medalha de prata
-        }
+        let MedalhaX;
+        let MedalhaY;
+
         if (Jogo.Placar.Pontos >= 100) {
-            MedalhaX = 144; // medalha de ouro
+            // medalha de ouro
+            MedalhaX = 0;
+            MedalhaY = 124;
+        } else if (Jogo.Placar.Pontos >= 50) {
+            // medalha de prata
+            MedalhaX = 48;
+            MedalhaY = 78;
+        } else if (Jogo.Placar.Pontos >= 20) {
+            // medalha de bronze
+            MedalhaX = 48;
+            MedalhaY = 124;
+        } else {
+            // medalha de papel
+            MedalhaX = 0;
+            MedalhaY = 78;
+
         }
 
         contexto.drawImage(
             sprites,
-            MedalhaX, 78, 
-            44, 44, 
-            GameOver.X + 25, GameOver.Y + 75, 
+            MedalhaX, MedalhaY,
+            44, 44,
+            GameOver.X + 26, GameOver.Y + 85,
             44, 44
         );
+
+        contexto.font = '20px "VT323"';
+        contexto.textAlign = 'center';
+        contexto.fillStyle = 'white';
+
+        let BotaoX = canvas.width / 2;
+        let BotaoY = canvas.height - 30;
+
+        contexto.fillText("Apagar a melhor pontuação", BotaoX, BotaoY);
     }
 };
+
+function VerificaCliqueApagar(evento) {
+    let MouseX = evento.clientX - canvas.getBoundingClientRect().left;
+    let MouseY = evento.clientY - canvas.getBoundingClientRect().top;
+
+    let BotaoX = canvas.width / 2;
+    let BotaoY = canvas.height - 30;
+
+    let LarguraTexto = contexto.measureText("Apagar a melhor pontuação").width;
+    let AlturaTexto = 20;
+
+    if (MouseX >= BotaoX - LarguraTexto / 2 && MouseX <= BotaoX + LarguraTexto / 2 &&
+        MouseY >= BotaoY - AlturaTexto / 2 && MouseY <= BotaoY + AlturaTexto / 2) {
+
+        if (window.confirm("Tem certeza que deseja apagar a melhor pontuação?")) {
+            localStorage.removeItem("MelhorPontuacao");
+        }
+    }
+}
+
+canvas.addEventListener("click", VerificaCliqueApagar);
 
 function MudarTelaAtiva() {
     TelaAtiva.Click();
